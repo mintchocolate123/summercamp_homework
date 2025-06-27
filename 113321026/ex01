@@ -1,1 +1,44 @@
+from flask import Flask, request
+from datetime import datetime
+app = Flask(__name__)
 
+@app.route('/order', methods=['GET', 'POST'])
+def order():
+    if request.method == 'GET':
+
+        file = open('static/lunch.txt', 'r', encoding='utf-8')
+        options = ""
+        for line in file:
+            T = line.strip().split(':')
+            options += f'<option value="{T[0]}">{T[1]}(${T[2]})</option>'
+        file.close()
+        html = f"""
+        <form method="POST">
+            姓名:<input name="name" type="text"></input>
+            <select name=choose>
+                {options}
+            </select>
+            <input type=submit> <input type=reset>
+        </form>
+        """
+        return html
+    else:
+        t = datetime.now()
+        name = request.values['name']
+        choose = request.values['choose']
+
+        file = open("static/order.txt", "a", encoding="utf-8")
+        file.write(f"{t.strftime('%Y-%m-%d %H:%M:%S')} {name} {choose}\n")
+        file.close()
+
+        return "完成點單\n"
+
+@app.route('/accept')
+def accept():
+    file = open('static/order.txt', 'r', encoding='utf-8')
+    html = ""
+    for line in file:
+        html += line.strip() + "<br>\n"
+    file.close()
+
+    return html
